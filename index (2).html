@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brada — Dashboard do Piloto</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --ink:#12211d; --paper:#f3efe6; --line:#d9d2c4; --line2:#ece6d9;
+    --brand:#0f5c4a; --brand2:#1a7a63; --brand-soft:#e4efe9;
+    --amber:#c9820a; --amber-soft:#f8ecd4;
+    --red:#b23a3a; --red-soft:#f6e2e0;
+    --slate:#4a5a63; --muted:#7d8a90;
+    --card:#ffffff;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);
+    background:
+      radial-gradient(1200px 600px at 12% -10%, #eef3f0 0%, transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, #f3efe6 0%, transparent 55%),
+      #ece7dc;
+    color:var(--ink);min-height:100vh}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 22px 60px}
+
+  /* ---------- ACCESS GATE ---------- */
+  #gate{position:fixed;inset:0;background:#0e1b17;display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .gatecard{background:#fff;border-radius:16px;padding:34px 32px;max-width:340px;width:100%;text-align:center;box-shadow:0 30px 70px -20px rgba(0,0,0,.5)}
+  .gatecard .glogo{width:46px;height:46px;border-radius:12px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:22px;margin:0 auto 16px}
+  .gatecard h2{font-family:var(--serif);font-size:20px;margin:0 0 6px;font-weight:600}
+  .gatecard p{font-size:12.5px;color:var(--slate);margin:0 0 18px;line-height:1.5}
+  .gatecard input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;font-size:14px;font-family:var(--sans);margin-bottom:10px;text-align:center;letter-spacing:.03em}
+  .gatecard input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+  .gatecard button{width:100%;background:var(--brand);color:#fff;border:none;border-radius:9px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+  .gatecard button:hover{background:#0c4c3d}
+  .gateerr{color:var(--red);font-size:11.5px;margin-top:9px;min-height:14px}
+  #dash{display:none}
+
+  /* ---------- HEADER ---------- */
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+  .brandblock{display:flex;flex-direction:column;gap:6px}
+  .kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--slate);font-weight:700}
+  h1{font-family:var(--serif);font-size:34px;line-height:1;margin:0;font-weight:600;letter-spacing:-.01em}
+  h1 .b{color:var(--brand)}
+  .sub{font-size:13px;color:var(--slate);max-width:520px;line-height:1.5}
+  .live{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--brand);background:var(--brand-soft);padding:8px 12px;border-radius:999px}
+  .pulse{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 0 rgba(15,92,74,.5);animation:p 2s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(15,92,74,.45)}70%{box-shadow:0 0 0 8px rgba(15,92,74,0)}100%{box-shadow:0 0 0 0 rgba(15,92,74,0)}}
+  .updated{font-size:10.5px;color:var(--muted);margin-top:4px}
+
+  .sectiontitle{display:flex;align-items:baseline;gap:10px;margin:30px 0 14px}
+  .sectiontitle h2{font-family:var(--serif);font-size:19px;margin:0;font-weight:600}
+  .sectiontitle span{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .sectiontitle .rule{flex:1;height:1px;background:var(--line)}
+
+  /* KPI ROW */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 17px;position:relative;overflow:hidden}
+  .kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand)}
+  .kpi.amber::after{background:var(--amber)} .kpi.slate::after{background:var(--slate)} .kpi.red::after{background:var(--red)}
+  .kpi .lbl{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--slate);font-weight:700}
+  .kpi .val{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1;margin:9px 0 4px;letter-spacing:-.02em}
+  .kpi .val small{font-size:14px;color:var(--muted);font-weight:400}
+  .kpi .delta{font-size:11px;font-weight:600;color:var(--muted)}
+
+  /* GRID */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .card.wide{grid-column:1 / -1}
+  .card h3{margin:0 0 3px;font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+  .card .cap{font-size:11px;color:var(--muted);margin:0 0 14px}
+
+  .flowrow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .flowrow .fn{font-size:12px;width:130px;flex-shrink:0;color:var(--ink);font-weight:500}
+  .flowrow .track{flex:1;background:var(--line2);border-radius:6px;height:18px;overflow:hidden}
+  .flowrow .fill{height:100%;border-radius:6px;transition:width .8s cubic-bezier(.4,0,.2,1);background:var(--brand)}
+  .flowrow .fv{font-size:11.5px;color:var(--slate);width:38px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+
+  .dl{display:flex;flex-direction:column;gap:8px}
+  .dl .r{display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+  .dl .r .nm{display:flex;align-items:center;gap:8px;color:var(--ink)}
+  .dl .r b{font-variant-numeric:tabular-nums}
+  .dotk{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+  .empty{color:var(--muted);font-size:12.5px;font-style:italic;padding:26px 6px;text-align:center;line-height:1.6;background:#faf7f0;border-radius:10px}
+
+  .quote{background:#faf7f0;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:9px 13px;font-size:12.5px;color:#3a3229;margin-bottom:8px;line-height:1.5;font-style:italic}
+
+  .foot{margin-top:26px;text-align:center;font-size:11px;color:var(--muted)}
+  .foot b{color:var(--brand)}
+  .err-banner{background:var(--red-soft);color:var(--red);font-size:12px;padding:10px 14px;border-radius:9px;margin-bottom:16px;display:none}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gatecard">
+    <div class="glogo">B</div>
+    <h2>Dashboard Brada</h2>
+    <p>Acesso restrito à equipa Nowledge × DEV. Introduz o código de acesso para continuar.</p>
+    <input type="password" id="gateInput" placeholder="Código de acesso" autocomplete="off">
+    <button onclick="tryUnlock()">Entrar</button>
+    <div class="gateerr" id="gateErr"></div>
+  </div>
+</div>
+
+<div id="dash">
+<div class="wrap">
+  <header class="top">
+    <div class="brandblock">
+      <span class="kicker">Nowledge × DEV · Corredor da Beira</span>
+      <h1><span class="b">Brada</span> · Dashboard do Piloto</h1>
+      <p class="sub">Dados reais do piloto em curso — uso da Brada (Postgres) e resultados do questionário baseline (Google Forms), atualizados automaticamente.</p>
+    </div>
+    <div>
+      <span class="live"><span class="pulse"></span> AO VIVO</span>
+      <div class="updated" id="updatedAt">a carregar…</div>
+    </div>
+  </header>
+
+  <div class="err-banner" id="errBanner"></div>
+
+  <!-- BLOCO A — USO DA BRADA -->
+  <div class="sectiontitle"><h2>Uso da Brada</h2><span>Postgres · em tempo real</span><div class="rule"></div></div>
+
+  <div class="kpis" id="kpisA">
+    <div class="kpi"><div class="lbl">Jovens ativadas</div><div class="val">—</div></div>
+    <div class="kpi amber"><div class="lbl">Ativas últimos 7 dias</div><div class="val">—</div></div>
+    <div class="kpi slate"><div class="lbl">Lucro registado (7 dias)</div><div class="val">—</div></div>
+    <div class="kpi"><div class="lbl">Streaks ativos (2+ semanas)</div><div class="val">—</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Vendas e custos (últimos 7 dias)</h3>
+      <p class="cap">Total registado pelas jovens ativas</p>
+      <div id="vendCustos"></div>
+    </div>
+    <div class="card">
+      <h3>Composição do grupo</h3>
+      <p class="cap">Por género · perfis ativos</p>
+      <div id="generoBlock"></div>
+    </div>
+  </div>
+
+  <!-- BLOCO B — BASELINE -->
+  <div class="sectiontitle"><h2>Questionário baseline</h2><span>Google Forms · respostas dos jovens</span><div class="rule"></div></div>
+
+  <div id="baselineContent">
+    <div class="empty">A carregar respostas do questionário…</div>
+  </div>
+
+  <div class="foot">Dashboard interno · dados reais do piloto Brada · <b>Nowledge × DEV</b>, 2026</div>
+</div>
+</div>
+
+<script>
+const ACCESS_CODE = "bradalover26";
+const WEBHOOK_URL = "https://primary-production-d32b2.up.railway.app/webhook/dashboard-brada-x7k2";
+const SHEET_ID = "1X0K4g_-ETy5Didl3E3UDDqf3OcSV-rYRXu7528KWhaw";
+const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+const REFRESH_MS = 30000;
+
+function tryUnlock(){
+  const val = document.getElementById('gateInput').value;
+  if(val === ACCESS_CODE){
+    sessionStorage.setItem('brada_dash_ok','1');
+    document.getElementById('gate').style.display='none';
+    document.getElementById('dash').style.display='block';
+    startPolling();
+  } else {
+    document.getElementById('gateErr').textContent = 'Código incorreto, tenta novamente.';
+  }
+}
+document.getElementById('gateInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+if(sessionStorage.getItem('brada_dash_ok')==='1'){
+  document.getElementById('gate').style.display='none';
+  document.getElementById('dash').style.display='block';
+  startPolling();
+}
+
+const fmt = n => Math.round(n).toLocaleString('pt-PT');
+
+function renderKPIsA(d){
+  const lucro7 = (d.vendas_7d||0) - (d.custos_7d||0);
+  const cards = [
+    {lbl:'Jovens ativadas', val: fmt(d.total_perfis), sub:`${d.total_piloto} no piloto`},
+    {lbl:'Ativas últimos 7 dias', val: fmt(d.ativos_7d), sub:`${d.total_registos} registos no total`},
+    {lbl:'Lucro registado (7 dias)', val: fmt(lucro7)+' MZN', sub:`${fmt(d.vendas_7d)} vendas − ${fmt(d.custos_7d)} custos`},
+    {lbl:'Streaks ativos (2+ semanas)', val: fmt(d.streaks_ativos), sub:`streak médio: ${d.streak_medio}`}
+  ];
+  document.getElementById('kpisA').innerHTML = cards.map((c,i)=>`
+    <div class="kpi ${i===1?'amber':i===2?'slate':''}">
+      <div class="lbl">${c.lbl}</div>
+      <div class="val">${c.val}</div>
+      <div class="delta">${c.sub}</div>
+    </div>`).join('');
+}
+
+function renderVendCustos(d){
+  const vend = d.vendas_7d||0, custo = d.custos_7d||0;
+  const max = Math.max(vend, custo, 1);
+  document.getElementById('vendCustos').innerHTML = `
+    <div class="flowrow"><span class="fn">Vendas</span><span class="track"><span class="fill" style="width:${Math.round(vend/max*100)}%;background:var(--brand)"></span></span><span class="fv">${fmt(vend)}</span></div>
+    <div class="flowrow"><span class="fn">Custos</span><span class="track"><span class="fill" style="width:${Math.round(custo/max*100)}%;background:var(--amber)"></span></span><span class="fv">${fmt(custo)}</span></div>
+  `;
+}
+
+function renderGenero(d){
+  const f = d.genero_f||0, m = d.genero_m||0, total = f+m;
+  if(total===0){ document.getElementById('generoBlock').innerHTML = '<div class="empty">Sem dados de género ainda.</div>'; return; }
+  const pf = Math.round(f/total*100), pm = 100-pf;
+  document.getElementById('generoBlock').innerHTML = `
+    <div class="dl">
+      <div class="r"><span class="nm"><i class="dotk" style="background:var(--brand)"></i>Mulheres</span><b>${f} (${pf}%)</b></div>
+      <div class="r"><span class="nm"><i class="dotk" style="background:var(--amber)"></i>Homens</span><b>${m} (${pm}%)</b></div>
+    </div>
+    <div class="flowrow" style="margin-top:12px">
+      <span class="track"><span class="fill" style="width:${pf}%;background:var(--brand)"></span></span>
+    </div>`;
+}
+
+async function loadPostgresData(){
+  try{
+    const r = await fetch(WEBHOOK_URL, {cache:'no-store'});
+    if(!r.ok) throw new Error('webhook status '+r.status);
+    const d = await r.json();
+    renderKPIsA(d);
+    renderVendCustos(d);
+    renderGenero(d);
+    document.getElementById('errBanner').style.display='none';
+    document.getElementById('updatedAt').textContent = 'atualizado às ' + new Date().toLocaleTimeString('pt-PT');
+  }catch(e){
+    document.getElementById('errBanner').textContent = '⚠ Não consegui atualizar os dados de uso da Brada agora. Vou tentar de novo em breve.';
+    document.getElementById('errBanner').style.display='block';
+  }
+}
+
+function parseYesish(v){
+  if(!v) return false;
+  return v.trim().toLowerCase().startsWith('sim');
+}
+
+async function loadBaselineData(){
+  try{
+    const r = await fetch(SHEET_CSV_URL, {cache:'no-store'});
+    if(!r.ok) throw new Error('sheet status '+r.status);
+    const csvText = await r.text();
+    const parsed = Papa.parse(csvText.trim(), {skipEmptyLines:true});
+    const rows = parsed.data.slice(1).filter(row => row[1] && row[1].trim()!=='');
+    if(rows.length === 0){
+      document.getElementById('baselineContent').innerHTML = `<div class="empty">Ainda sem respostas ao questionário baseline.<br>Assim que os jovens começarem a responder, os resultados aparecem aqui automaticamente.</div>`;
+      return;
+    }
+    const total = rows.length;
+    const idades = rows.map(r=>parseFloat(r[2])).filter(n=>!isNaN(n));
+    const idadeMedia = idades.length ? (idades.reduce((a,b)=>a+b,0)/idades.length).toFixed(1) : '—';
+    const distritoCounts = {};
+    rows.forEach(r=>{ const dd=(r[5]||'—').trim(); distritoCounts[dd]=(distritoCounts[dd]||0)+1; });
+    const distritos = Object.entries(distritoCounts).sort((a,b)=>b[1]-a[1]);
+    const sexoCounts = {};
+    rows.forEach(r=>{ const s=(r[3]||'—').trim(); sexoCounts[s]=(sexoCounts[s]||0)+1; });
+    const anota = rows.filter(r=>parseYesish(r[10])).length;
+    const sabeLucro = rows.filter(r=>parseYesish(r[11])).length;
+    const separaDinheiro = rows.filter(r=>parseYesish(r[12])).length;
+    const grupoPoupanca = rows.filter(r=>parseYesish(r[13])).length;
+    const vendasDia = rows.map(r=>parseFloat((r[14]||'').replace(/[^\d.]/g,''))).filter(n=>!isNaN(n) && n>0);
+    const vendaMedia = vendasDia.length ? Math.round(vendasDia.reduce((a,b)=>a+b,0)/vendasDia.length) : null;
+    const pedidos = rows.map(r=>r[16]).filter(t=>t && t.trim()!=='').slice(-4).reverse();
+
+    const pct = n => total ? Math.round(n/total*100) : 0;
+    const maxDistrito = Math.max(...distritos.map(d=>d[1]),1);
+
+    let html = `
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Respostas recebidas</div><div class="val">${total}</div></div>
+      <div class="kpi amber"><div class="lbl">Idade média</div><div class="val">${idadeMedia}${idades.length? ' <small>anos</small>':''}</div></div>
+      <div class="kpi slate"><div class="lbl">Já sabem quanto lucram</div><div class="val">${pct(sabeLucro)}%</div></div>
+      <div class="kpi"><div class="lbl">Já anotam vendas/gastos</div><div class="val">${pct(anota)}%</div></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Distribuição por distrito</h3>
+        <p class="cap">Onde vivem os jovens que já responderam</p>
+        <div>${distritos.map(([nm,n])=>`
+          <div class="flowrow"><span class="fn">${nm}</span><span class="track"><span class="fill" style="width:${Math.round(n/maxDistrito*100)}%"></span></span><span class="fv">${n}</span></div>
+        `).join('')}</div>
+      </div>
+      <div class="card">
+        <h3>Hábitos financeiros já existentes</h3>
+        <p class="cap">Antes de começarem com a Brada</p>
+        <div class="dl">
+          <div class="r"><span class="nm">Separam dinheiro pessoal do negócio</span><b>${pct(separaDinheiro)}%</b></div>
+          <div class="r"><span class="nm">Já pertencem a grupo de poupança</span><b>${pct(grupoPoupanca)}%</b></div>
+          <div class="r"><span class="nm">Venda média diária declarada</span><b>${vendaMedia? fmt(vendaMedia)+' MZN' : '—'}</b></div>
+          <div class="r"><span class="nm">Distribuição por género</span><b>${Object.entries(sexoCounts).map(([s,n])=>`${s}: ${n}`).join(' · ')}</b></div>
+        </div>
+      </div>
+      <div class="card wide">
+        <h3>O que mais gostariam que a Brada os ajudasse</h3>
+        <p class="cap">Últimas respostas recebidas (texto livre)</p>
+        ${pedidos.length ? pedidos.map(t=>`<div class="quote">"${t.replace(/</g,'&lt;')}"</div>`).join('') : '<div class="empty">Sem respostas de texto ainda.</div>'}
+      </div>
+    </div>`;
+    document.getElementById('baselineContent').innerHTML = html;
+    requestAnimationFrame(()=>document.querySelectorAll('#baselineContent .fill:not([style*="background"])').forEach(el=>el.style.background='var(--brand)'));
+  }catch(e){
+    document.getElementById('baselineContent').innerHTML = `<div class="empty">Não consegui carregar o questionário agora. Confirma que a Google Sheet continua partilhada como "qualquer pessoa com o link pode ver".</div>`;
+  }
+}
+
+let polling=false;
+function startPolling(){
+  if(polling) return;
+  polling=true;
+  loadPostgresData();
+  loadBaselineData();
+  setInterval(loadPostgresData, REFRESH_MS);
+  setInterval(loadBaselineData, REFRESH_MS);
+}
+</script>
+</body>
+</html>
