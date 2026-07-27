@@ -204,6 +204,13 @@ tr.clickable:hover{background:var(--green-soft)}
         <div class="rows" id="convstats"></div>
       </div>
     </div>
+    <div class="grid">
+      <div class="card wide">
+        <h3>Conversas por tema</h3>
+        <p class="cap">Sobre o que os jovens estão a falar com a Brada, por género</p>
+        <div id="temas"></div>
+      </div>
+    </div>
   </div>
 
   <!-- JOVENS -->
@@ -346,7 +353,34 @@ function renderMain(d){
   if(tv.length) bars(document.getElementById('topvend'),tv);
   else document.getElementById('topvend').innerHTML='<div class="empty">Ainda não há vendas registadas por nenhum jovem. Aparece aqui assim que começarem a registar com a Brada.</div>';
 
+  renderTemas(d.temas||[]);
   renderPeople();
+}
+
+function renderTemas(temas){
+  const el=document.getElementById('temas');
+  if(!temas.length){
+    el.innerHTML='<div class="empty">Ainda não há conversas suficientes para identificar temas. Aparece aqui assim que mais jovens começarem a falar com a Brada.</div>';
+    return;
+  }
+  const porTema={};
+  temas.forEach(t=>{
+    if(!porTema[t.tema]) porTema[t.tema]={F:0,M:0};
+    porTema[t.tema][t.genero||'M']=(porTema[t.tema][t.genero||'M']||0)+ +t.contagem;
+  });
+  const ordem=Object.keys(porTema).sort((a,b)=>(porTema[b].F+porTema[b].M)-(porTema[a].F+porTema[a].M));
+  const max=Math.max(...ordem.map(k=>porTema[k].F+porTema[k].M),1);
+  el.innerHTML=ordem.map(k=>{
+    const f=porTema[k].F||0, m=porTema[k].M||0, tot=f+m;
+    const wf=Math.round(f/max*100), wm=Math.round(m/max*100);
+    return `<div class="bar"><span class="n" title="${esc(k)}">${esc(k)}</span>
+      <span class="tr" style="display:flex">
+        <span class="fl" style="width:${wf}%;background:var(--green)" title="${f} mulheres"></span>
+        <span class="fl" style="width:${wm}%;background:var(--navy2)" title="${m} homens"></span>
+      </span>
+      <span class="v">${tot}</span></div>`;
+  }).join('')
+  + '<div class="legend" style="display:flex;gap:16px;margin-top:10px;font-size:11.5px;color:var(--muted)"><span><i class="dot" style="background:var(--green)"></i>Mulheres</span><span><i class="dot" style="background:var(--navy2)"></i>Homens</span></div>';
 }
 
 function renderPeople(){
