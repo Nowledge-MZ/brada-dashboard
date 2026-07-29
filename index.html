@@ -276,6 +276,7 @@ tr.clickable:hover{background:var(--green-soft)}
 <script>
 const CODE="bradalover26";
 const HOOK="https://primary-production-d32b2.up.railway.app/webhook/dashboard-brada-x7k2";
+const HOOK_CONVERSA="https://primary-production-d32b2.up.railway.app/webhook/conversa-jovem-k3m9";
 const SHEET="https://docs.google.com/spreadsheets/d/1X0K4g_-ETy5Didl3E3UDDqf3OcSV-rYRXu7528KWhaw/gviz/tq?tqx=out:csv";
 const MS=30000;
 let DATA=null, SEL=null;
@@ -398,17 +399,26 @@ function renderPeople(){
   if(SEL) pick(SEL,true);
 }
 
-function pick(num,keep){
+async function pick(num,keep){
   SEL=num;
   const j=(DATA.jovens||[]).find(x=>x.numero===num);
-  const msgs=(DATA.conversas||[]).filter(c=>c.session_id===num).sort((a,b)=>a.id-b.id);
   document.getElementById('waName').textContent=j?j.nome:'—';
   document.getElementById('waSub').textContent=j?(j.negocio||'negócio não informado'):'';
   const b=document.getElementById('waBody');
-  if(!msgs.length){ b.innerHTML='<div class="waempty">Ainda sem conversa registada com este jovem.</div>'; return; }
-  b.innerHTML=msgs.map(m=>`<div class="bub ${m.tipo}">${esc(m.texto)}</div>`).join('');
-  if(!keep) b.scrollTop=b.scrollHeight;
-  else b.scrollTop=b.scrollHeight;
+  b.innerHTML='<div class="waempty">A carregar conversa…</div>';
+  const numeroLimpo=num.replace('@c.us','');
+  try{
+    const r=await fetch(HOOK_CONVERSA+'?numero='+numeroLimpo,{cache:'no-store'});
+    if(!r.ok) throw 0;
+    const msgs=await r.json();
+    if(SEL!==num) return; // pessoa mudou entretanto, ignora resposta tardia
+    if(!msgs.length){ b.innerHTML='<div class="waempty">Ainda sem conversa registada com este jovem.</div>'; return; }
+    b.innerHTML=msgs.map(m=>`<div class="bub ${m.tipo}">${esc(m.texto)}</div>`).join('');
+    b.scrollTop=b.scrollHeight;
+  }catch(e){
+    if(SEL!==num) return;
+    b.innerHTML='<div class="waempty">Não consegui carregar a conversa agora. Tenta clicar novamente.</div>';
+  }
 }
 
 async function loadPG(){
