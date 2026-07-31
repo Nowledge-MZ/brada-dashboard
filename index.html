@@ -90,6 +90,11 @@ body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);min-
 .rw:last-child{border:none;padding-bottom:0}
 .rw b{font-variant-numeric:tabular-nums;font-weight:600}
 .dot{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px}
+.cloud{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;line-height:1.3;padding:6px 0}
+.cloud span{font-weight:600;color:var(--navy2);cursor:default}
+.cloud span:nth-child(3n+1){color:var(--green-d)}
+.cloud span:nth-child(3n+2){color:var(--navy2)}
+.cloud span:nth-child(3n){color:var(--gold-d,#b8860b)}
 
 /* PEOPLE TABLE */
 .tablewrap{overflow-x:auto}
@@ -253,14 +258,14 @@ tr.clickable:hover{background:var(--green-soft)}
     </div>
     <div class="grid">
       <div class="card">
-        <h3>Sobre a região</h3>
-        <p class="cap">Estado atual do dado</p>
-        <div class="empty">Os dados de localidade (Pungue-Nhamu, Vila Sede-Nhapassa, etc.) existem na lista original do Kupulumuswa mas ainda não foram carregados na base de dados da Brada. Próximo passo acordado: importar a localidade de cada jovem para permitir esta vista por zona.</div>
-      </div>
-      <div class="card">
         <h3>Vendas por jovem</h3>
         <p class="cap">Quem já registou movimento · Meticais acumulados</p>
         <div id="topvend"></div>
+      </div>
+      <div class="card">
+        <h3>Nuvem de palavras</h3>
+        <p class="cap">Palavras mais usadas pelos jovens, nas mensagens mais recentes</p>
+        <div id="nuvem"></div>
       </div>
     </div>
   </div>
@@ -355,7 +360,23 @@ function renderMain(d){
   else document.getElementById('topvend').innerHTML='<div class="empty">Ainda não há vendas registadas por nenhum jovem. Aparece aqui assim que começarem a registar com a Brada.</div>';
 
   renderTemas(d.temas||[]);
+  renderNuvem(d.nuvem_palavras||[]);
   renderPeople();
+}
+
+function renderNuvem(palavras){
+  const el=document.getElementById('nuvem');
+  if(!palavras.length){
+    el.innerHTML='<div class="empty">Ainda não há mensagens suficientes para gerar a nuvem de palavras.</div>';
+    return;
+  }
+  const max=Math.max(...palavras.map(p=>+p.n));
+  const min=Math.min(...palavras.map(p=>+p.n));
+  el.innerHTML='<div class="cloud">'+palavras.map(p=>{
+    const escala=max===min?1:(+p.n-min)/(max-min);
+    const size=(12+escala*20).toFixed(0);
+    return `<span style="font-size:${size}px" title="${p.n} vezes">${esc(p.palavra)}</span>`;
+  }).join('')+'</div>';
 }
 
 function renderTemas(temas){
