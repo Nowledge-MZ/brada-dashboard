@@ -59,7 +59,34 @@ body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);min-
 /* KPI */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
 @media(max-width:860px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 19px;position:relative;overflow:hidden;transition:.2s}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;position:relative;overflow:hidden;transition:.2s}
+.kpis{margin-top:2px}
+.kpis .val{font-size:24px}
+.kpis .lbl{font-size:10.5px}
+.hero{background:linear-gradient(135deg,var(--navy),var(--navy2) 60%,var(--green-d));border-radius:22px;padding:26px 30px;margin-bottom:16px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.10),transparent 70%)}
+.hero .hlabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.75;font-weight:600}
+.hero .hval{font-family:var(--display);font-size:52px;font-weight:700;line-height:1;margin-top:6px;letter-spacing:-.02em;display:flex;align-items:baseline;gap:10px}
+.hero .hval small{font-size:20px;font-weight:400;opacity:.8}
+.hero .hsub{font-size:12.5px;opacity:.82;margin-top:8px;max-width:360px}
+.hero .hbar{width:220px;flex-shrink:0}
+.hero .hbar .htr{background:rgba(255,255,255,.18);border-radius:8px;height:10px;overflow:hidden;margin-bottom:8px}
+.hero .hbar .hfl{height:100%;border-radius:8px;background:#fff;transition:width 1.1s cubic-bezier(.4,0,.2,1);width:0}
+.hero .hbar .hpct{font-size:22px;font-weight:700;text-align:right}
+.hero .hbar .hpctlabel{font-size:10.5px;opacity:.75;text-align:right;letter-spacing:.04em;text-transform:uppercase}
+.esclist{display:flex;flex-direction:column;gap:8px}
+.escrow{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--line2);border-left:3px solid var(--muted)}
+.escrow.aberto{border-left-color:var(--red,#c0392b);background:var(--red-soft,#fdeceb)}
+.escrow.em_curso{border-left-color:var(--gold);background:var(--gold-soft)}
+.escrow.resolvido{border-left-color:var(--green);background:var(--green-soft)}
+.escrow .etype{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:rgba(0,0,0,.06);flex-shrink:0}
+.escrow .ename{font-size:13px;font-weight:600;flex:1;min-width:0}
+.escrow .ereason{font-size:11.5px;color:var(--muted);display:block;font-weight:400;white-space:normal}
+.escrow .estatus{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.escrow.aberto .estatus{color:var(--red,#c0392b)}
+#escBadge{font-size:11px;font-weight:700;background:var(--red-soft,#fdeceb);color:var(--red,#c0392b);padding:2px 9px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.escrow.em_curso .estatus{color:var(--gold-d,#a06a00)}
+.escrow.resolvido .estatus{color:var(--green-d)}
 .kpi:hover{transform:translateY(-2px);box-shadow:0 10px 30px -12px rgba(20,28,51,.18)}
 .kpi .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:11px;background:var(--green-soft)}
 .kpi.g .ic{background:var(--gold-soft)} .kpi.n .ic{background:#eceef4}
@@ -206,6 +233,7 @@ tr.clickable:hover{background:var(--green-soft)}
 
   <!-- VISAO GERAL -->
   <div class="pane on" id="p-visao">
+    <div class="hero" id="heroStat"></div>
     <div class="kpis" id="kA"></div>
     <div class="grid g3">
       <div class="card">
@@ -230,6 +258,13 @@ tr.clickable:hover{background:var(--green-soft)}
         <h3>Atividade de conversa</h3>
         <p class="cap">Mensagens trocadas com a Brada</p>
         <div class="rows" id="convstats"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card wide">
+        <h3>Escalonamentos <span id="escBadge"></span></h3>
+        <p class="cap">Casos de soft skills e números por verificar — para a equipa DEV</p>
+        <div id="escList"></div>
       </div>
     </div>
     <div class="grid">
@@ -364,6 +399,24 @@ function bars(el,items,cls){
 
 function renderMain(d){
   const lucro=(d.vendas_7d||0)-(d.custos_7d||0);
+  const total=+d.total_piloto||0;
+  const contactados=+d.baseline_enviados||0;
+  const conversaram=+d.jovens_conversaram||0;
+  const pctContactados=total>0?Math.round(contactados/total*100):0;
+  document.getElementById('heroStat').innerHTML=`
+    <div>
+      <div class="hlabel">Marco do piloto</div>
+      <div class="hval"><span class="cnt" data-target="${contactados}">0</span><small>de ${f(total)} jovens já foram contactados pela Brada</small></div>
+      <div class="hsub">A maioria destes contactos aconteceu nos últimos dias — é natural que as respostas ainda estejam a começar. ${f(conversaram)} já responderam pelo menos uma vez até agora.</div>
+    </div>
+    <div class="hbar">
+      <div class="hpct"><span class="cnt" data-target="${pctContactados}">0</span>%</div>
+      <div class="hpctlabel">base contactada</div>
+      <div class="htr"><div class="hfl" id="heroBarFill" data-w="${pctContactados}"></div></div>
+    </div>`;
+  animateCounts(document.getElementById('heroStat'));
+  requestAnimationFrame(()=>{const hb=document.getElementById('heroBarFill'); if(hb) hb.style.width=hb.dataset.w+'%';});
+
   const cards=[
     {ic:'👥',lbl:'Jovens no programa',target:+d.total_piloto||0,suf:'',sub:`${f(d.total_perfis)} perfis na base`},
     {ic:'💬',lbl:'Jovens que já conversaram',target:+d.jovens_conversaram||0,suf:'',sub:`${f(d.msgs_jovens)} mensagens enviadas por eles`,c:'g'},
@@ -410,7 +463,31 @@ function renderMain(d){
 
   renderTemas(d.temas||[]);
   renderNuvem(d.nuvem_palavras||[]);
+  renderEscalonamentos(d.escalonamentos||[], d.escalonamentos_abertos||0);
   renderPeople();
+}
+
+function renderEscalonamentos(lista, abertos){
+  const badge=document.getElementById('escBadge');
+  badge.textContent=abertos>0?`${abertos} em aberto`:'';
+  badge.style.display=abertos>0?'inline-block':'none';
+  const el=document.getElementById('escList');
+  if(!lista.length){
+    el.innerHTML='<div class="empty">Ainda não houve nenhum escalonamento — aparece aqui assim que a Brada encaminhar um caso à equipa.</div>';
+    return;
+  }
+  const tipoLabel={soft_skill:'Soft skill',numero_invalido:'Número inválido'};
+  const statusLabel={aberto:'Aberto',em_curso:'Em curso',resolvido:'Resolvido'};
+  el.innerHTML='<div class="esclist">'+lista.map(e=>{
+    const st=e.status||'aberto';
+    let dt='';
+    try{ dt=new Date(e.criado_em).toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(err){}
+    return `<div class="escrow ${esc(st)}">
+      <span class="etype">${esc(tipoLabel[e.tipo]||e.tipo||'—')}</span>
+      <span class="ename">${esc(e.nome||e.numero||'—')}<span class="ereason">${esc(e.motivo||'')} · ${dt}</span></span>
+      <span class="estatus">${esc(statusLabel[st]||st)}</span>
+    </div>`;
+  }).join('')+'</div>';
 }
 
 function renderNuvem(palavras){
