@@ -70,7 +70,7 @@ body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);min-
 
 /* CARDS */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-.grid.g3{grid-template-columns:1.4fr 1fr}
+.grid.g3{grid-template-columns:1fr 0.85fr 1.15fr}
 @media(max-width:900px){.grid,.grid.g3{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
 .card.wide{grid-column:1/-1}
@@ -95,6 +95,24 @@ body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);min-
 .cloud span:nth-child(3n+1){color:var(--green-d)}
 .cloud span:nth-child(3n+2){color:var(--navy2)}
 .cloud span:nth-child(3n){color:var(--gold-d,#b8860b)}
+.fichawrap{display:flex;flex-direction:column;gap:14px}
+.fichahead{display:flex;align-items:center;gap:12px}
+.fichahead .favatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:17px;color:#fff;flex-shrink:0}
+.fichahead .favatar.M{background:linear-gradient(135deg,var(--navy2),var(--navy3))}
+.fichahead .favatar.F{background:linear-gradient(135deg,var(--green),var(--green-l))}
+.fichahead .fname{font-size:15px;font-weight:700}
+.fichahead .fneg{font-size:12px;color:var(--muted)}
+.fichagrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fichastat{background:var(--line2);border-radius:10px;padding:9px 11px}
+.fichastat .fl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.fichastat .fv{font-size:16px;font-weight:700;margin-top:2px}
+.fichaweeks{display:flex;flex-direction:column;gap:6px}
+.fweek{display:flex;align-items:center;gap:8px}
+.fweek .wl{font-size:11px;color:var(--muted);width:64px;flex-shrink:0}
+.fweek .wtr{flex:1;background:var(--line2);border-radius:6px;height:16px;overflow:hidden;position:relative}
+.fweek .wfl{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),var(--green-l))}
+.fweek .wv{font-size:10.5px;color:var(--muted);width:70px;text-align:right;flex-shrink:0}
+.fichaempty{font-size:12px;color:var(--muted);text-align:center;padding:16px 8px}
 
 /* PEOPLE TABLE */
 .tablewrap{overflow-x:auto}
@@ -243,6 +261,11 @@ tr.clickable:hover{background:var(--green-soft)}
           </div>
           <div class="phonehint">Conversas reais, tal como aconteceram no WhatsApp.</div>
         </div>
+      </div>
+      <div class="card">
+        <h3>Ficha do jovem</h3>
+        <p class="cap">Resumo, streak e histórico semanal</p>
+        <div id="fichaContent"><div class="fichaempty">Escolhe um jovem na lista para veres a ficha completa.</div></div>
       </div>
     </div>
   </div>
@@ -426,20 +449,71 @@ async function pick(num,keep){
   document.getElementById('waName').textContent=j?j.nome:'—';
   document.getElementById('waSub').textContent=j?(j.negocio||'negócio não informado'):'';
   const b=document.getElementById('waBody');
+  const fc=document.getElementById('fichaContent');
   b.innerHTML='<div class="waempty">A carregar conversa…</div>';
+  fc.innerHTML='<div class="fichaempty">A carregar ficha…</div>';
   const numeroLimpo=num.replace('@c.us','');
   try{
     const r=await fetch(HOOK_CONVERSA+'?numero='+numeroLimpo,{cache:'no-store'});
     if(!r.ok) throw 0;
-    const msgs=await r.json();
+    const data=await r.json();
     if(SEL!==num) return; // pessoa mudou entretanto, ignora resposta tardia
-    if(!msgs.length){ b.innerHTML='<div class="waempty">Ainda sem conversa registada com este jovem.</div>'; return; }
-    b.innerHTML=msgs.map(m=>`<div class="bub ${m.tipo}">${esc(m.texto)}</div>`).join('');
-    b.scrollTop=b.scrollHeight;
+    const payload=(data&&data[0]&&data[0].resultado)?data[0].resultado:{mensagens:[],perfil:null,streak:null,semanas:[]};
+    const msgs=payload.mensagens||[];
+    if(!msgs.length){ b.innerHTML='<div class="waempty">Ainda sem conversa registada com este jovem.</div>'; }
+    else{
+      b.innerHTML=msgs.map(m=>`<div class="bub ${m.tipo}">${esc(m.texto)}</div>`).join('');
+      b.scrollTop=b.scrollHeight;
+    }
+    renderFicha(payload,j);
   }catch(e){
     if(SEL!==num) return;
     b.innerHTML='<div class="waempty">Não consegui carregar a conversa agora. Tenta clicar novamente.</div>';
+    fc.innerHTML='<div class="fichaempty">Não consegui carregar a ficha agora.</div>';
   }
+}
+
+function renderFicha(payload,j){
+  const fc=document.getElementById('fichaContent');
+  const perfil=payload.perfil||{};
+  const streak=payload.streak||{};
+  const semanas=payload.semanas||[];
+  const nome=perfil.nome||(j?j.nome:'—');
+  const negocio=perfil.negocio||'negócio não informado';
+  const genero=perfil.genero==='F'?'F':(perfil.genero==='M'?'M':'');
+  const initialsTxt=initials(nome);
+  const totalVendas=semanas.reduce((s,w)=>s+(+w.vendas||0),0);
+  const totalCustos=semanas.reduce((s,w)=>s+(+w.custos||0),0);
+  const lucro=totalVendas-totalCustos;
+
+  let html='<div class="fichawrap">';
+  html+=`<div class="fichahead">
+    <div class="favatar ${genero}">${esc(initialsTxt)}</div>
+    <div><div class="fname">${esc(nome)}</div><div class="fneg">${esc(negocio)}</div></div>
+  </div>`;
+  html+=`<div class="fichagrid">
+    <div class="fichastat"><div class="fl">Dia de fecho</div><div class="fv">${esc(perfil.dia_fecho_semanal||'ainda não escolhido')}</div></div>
+    <div class="fichastat"><div class="fl">Formulário</div><div class="fv">${perfil.baseline_enviado?'enviado':'por enviar'}</div></div>
+    <div class="fichastat"><div class="fl">Sequência atual</div><div class="fv">${streak.streak_atual!=null?streak.streak_atual+' 🔥':'—'}</div></div>
+    <div class="fichastat"><div class="fl">Sequência máxima</div><div class="fv">${streak.streak_maximo!=null?streak.streak_maximo:'—'}</div></div>
+  </div>`;
+
+  if(semanas.length){
+    html+=`<div class="fichastat"><div class="fl">Total acumulado</div><div class="fv">${f(lucro)} MZN de lucro</div></div>`;
+    html+='<div class="fichaweeks">';
+    const maxV=Math.max(...semanas.map(w=>Math.max(+w.vendas||0,+w.custos||0)),1);
+    semanas.forEach(w=>{
+      const dt=new Date(w.semana);
+      const label=dt.toLocaleDateString('pt-PT',{day:'2-digit',month:'2-digit'});
+      const wv=Math.round((+w.vendas||0)/maxV*100);
+      html+=`<div class="fweek"><span class="wl">${label}</span><span class="wtr"><span class="wfl" style="width:${wv}%"></span></span><span class="wv">${f(w.vendas)} MZN</span></div>`;
+    });
+    html+='</div>';
+  }else{
+    html+='<div class="fichaempty">Ainda sem registos diários desta pessoa — a ficha preenche-se à medida que ela conversa com a Brada.</div>';
+  }
+  html+='</div>';
+  fc.innerHTML=html;
 }
 
 async function loadPG(){
