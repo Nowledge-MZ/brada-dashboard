@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O teu mês com a Brada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Caveat:wght@600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#141c33; --navy2:#1e2947;
+  --green:#28a57d; --green-d:#1c8563; --green-l:#5ec9a4; --green-soft:#e6f6f0;
+  --gold:#f5b82e; --gold-soft:#fdf2d9; --gold-d:#a06a00;
+  --ink:#141c33; --muted:#7b8499; --line:#e9ebf1;
+  --bg:#f6f7fa; --card:#ffffff;
+  --display:"Fraunces",Georgia,serif;
+  --sans:"Outfit",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+.wrap{max-width:430px;margin:0 auto;padding:22px 18px 40px}
+.head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{font-family:"Caveat",cursive;font-size:30px;color:var(--navy);line-height:1}
+.month{font-size:12px;color:var(--muted);font-weight:500;text-align:right}
+.month b{display:block;color:var(--ink);font-size:14px;font-family:var(--sans);font-weight:700}
+.hero{background:linear-gradient(150deg,var(--navy) 0%,var(--navy2) 55%,var(--green-d) 130%);border-radius:26px;padding:30px 24px 26px;color:#fff;position:relative;overflow:hidden;margin-bottom:16px}
+.hero::before{content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(245,184,46,.28),transparent 70%)}
+.hero .eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.75;font-weight:600;position:relative}
+.hero h1{font-family:var(--display);font-size:24px;line-height:1.28;font-weight:700;margin:10px 0 4px;position:relative;max-width:290px}
+.hero .sub{font-size:13.5px;opacity:.88;position:relative;line-height:1.5;max-width:280px}
+.hero .big{font-family:var(--display);font-size:44px;font-weight:700;line-height:1;margin-top:16px;position:relative;letter-spacing:-.01em}
+.hero .big small{font-size:16px;font-weight:400;opacity:.8;font-family:var(--sans)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 16px 15px}
+.stat .ic{font-size:20px;margin-bottom:8px}
+.stat .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.stat .val{font-family:var(--display);font-size:23px;font-weight:700;margin-top:4px;line-height:1.1}
+.stat .val small{font-size:12px;font-weight:400;color:var(--muted);font-family:var(--sans)}
+.stat .cap{font-size:11px;color:var(--muted);margin-top:3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px 20px 18px;margin-bottom:16px}
+.card h3{font-family:var(--display);font-size:16px;font-weight:700;margin:0 0 3px}
+.card .cap{font-size:11.5px;color:var(--muted);margin:0 0 16px}
+.trend{display:flex;align-items:flex-end;gap:10px;height:110px;padding:24px 4px 0}
+.trend .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.trend .bar{width:100%;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--green-l),var(--green));transition:height .8s cubic-bezier(.4,0,.2,1);position:relative;min-height:2px}
+.trend .bar.now{background:linear-gradient(180deg,var(--gold),#e0a30f)}
+.trend .bar.neg{background:linear-gradient(180deg,#e8a39a,#c0392b)}
+.trend .val{position:absolute;top:-20px;left:0;right:0;text-align:center;font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap}
+.trend .m{font-size:10.5px;color:var(--muted);font-weight:600}
+.badge{display:flex;align-items:center;gap:12px;background:var(--gold-soft);border-radius:16px;padding:14px 16px;margin-bottom:16px}
+.badge .ic{font-size:22px;flex-shrink:0}
+.badge .txt{font-size:13px;line-height:1.45;color:#5c4108}
+.badge .txt b{display:block;font-size:13.5px;margin-bottom:1px}
+.tips{display:flex;flex-direction:column;gap:9px}
+.tip{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.5;color:var(--ink)}
+.tip .dot{width:20px;height:20px;border-radius:50%;background:var(--green-soft);color:var(--green-d);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);color:#fff;text-decoration:none;font-weight:600;font-size:14.5px;border-radius:16px;padding:15px;margin-top:6px}
+.foot{text-align:center;font-size:11px;color:var(--muted);margin-top:18px;line-height:1.6}
+.loading,.errbox{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+
+.nivel{display:flex;align-items:center;gap:14px}
+.nivel .ic{font-size:34px;line-height:1}
+.nivel .t{font-family:var(--display);font-size:18px;font-weight:700;line-height:1.2}
+.nivel .c{font-size:12px;color:var(--muted);margin-top:2px}
+.prog{height:8px;background:var(--line);border-radius:6px;margin-top:14px;overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--green-l),var(--green));border-radius:6px}
+.caminho p{font-size:13.5px;line-height:1.55;margin:0 0 10px}
+.caminho .alvo{background:var(--green-soft);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--green-d)}
+.caminho .alvo b{font-family:var(--display);font-size:20px;display:block;margin-bottom:2px}
+.passo{background:var(--navy);color:#fff;border-radius:20px;padding:20px;margin-bottom:16px}
+.passo .lbl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.7;font-weight:600}
+.passo .txt{font-family:var(--display);font-size:18px;line-height:1.35;font-weight:700;margin-top:6px}
+.enc{text-align:center;font-size:14px;line-height:1.55;color:var(--ink);margin:4px 8px 16px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading" id="loading">A carregar o teu resumo… 🌱</div>
+</div>
+
+<script>
+const HOOK = "https://primary-production-d32b2.up.railway.app/webhook/relatorio-mensal-p9x2";
+const MESES_PT = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const f = n => Math.round(n||0).toLocaleString('pt-PT');
+
+function primeiroNome(n){ return (n||'').trim().split(/\s+/)[0]; }
+
+function mesLabel(dataStr){
+  const d = new Date(dataStr);
+  return MESES_PT[d.getMonth()].charAt(0).toUpperCase() + MESES_PT[d.getMonth()].slice(1) + " " + d.getFullYear();
+}
+function mesCurto(dataStr){
+  const d = new Date(dataStr);
+  return MESES_PT[d.getMonth()].slice(0,3).charAt(0).toUpperCase() + MESES_PT[d.getMonth()].slice(1,3);
+}
+
+async function load(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const app = document.getElementById('app');
+  if(!token){
+    app.innerHTML = '<div class="errbox">Link inválido — falta o código de acesso.</div>';
+    return;
+  }
+  try{
+    const r = await fetch(HOOK + '?token=' + encodeURIComponent(token), {cache:'no-store'});
+    if(!r.ok) throw 0;
+    const data = await r.json();
+    const p = (data && data[0] && data[0].resultado) ? data[0].resultado : null;
+    if(!p || !p.numero){
+      app.innerHTML = '<div class="errbox">Não encontrámos o teu relatório. Fala com a Brada para gerares um novo link.</div>';
+      return;
+    }
+    render(p);
+  }catch(e){
+    app.innerHTML = '<div class="errbox">Não conseguimos carregar agora. Tenta novamente daqui a pouco.</div>';
+  }
+}
+
+
+const NIVEIS = {
+  "Semente":{ic:"🌱", ini:0,  fim:7},
+  "Rebento":{ic:"🌿", ini:7,  fim:15},
+  "Planta": {ic:"🪴", ini:15, fim:30},
+  "Árvore": {ic:"🌳", ini:30, fim:60},
+  "Floresta":{ic:"🌲", ini:60, fim:60}
+};
+
+function render(p){
+  const app = document.getElementById('app');
+  const nome = primeiroNome(p.nome);
+  const meses = (p.meses||[]).slice().reverse(); // ordem cronologica ascendente
+  const temMesReferencia = !!p.mes_referencia;
+  const mesAtualObj = meses.length ? meses[meses.length-1] : null;
+  const mesAnteriorObj = meses.length >= 2 ? meses[meses.length-2] : null;
+
+  const lucroMes = mesAtualObj ? (mesAtualObj.vendas - mesAtualObj.custos_diretos - mesAtualObj.custos_indiretos) : 0;
+  const lucroAnterior = mesAnteriorObj ? (mesAnteriorObj.vendas - mesAnteriorObj.custos_diretos - mesAnteriorObj.custos_indiretos) : null;
+
+  // --- evolucao em MZN por dia (campos novos); sem eles, cai para o lucro total do mes ---
+  const temNovo = !!p.benchmark;
+  const evo = p.evolucao_mes || null;
+  const dif = p.diferenca_lucro_dia;
+  const subiuDia = temNovo && evo === 'subiu' && dif > 0;
+  const subiuTotal = !temNovo && lucroAnterior !== null && lucroAnterior > 0 && lucroMes > lucroAnterior;
+
+  // ---- Hero ----
+  let heroEyebrow = "Destaque do mês";
+  let heroTitle, heroSub, heroBig, heroBigLabel;
+
+  if(!temMesReferencia){
+    heroTitle = `Olá, ${nome}! Ainda não temos registos teus.`;
+    heroSub = "Assim que começares a contar à Brada como correm as vendas, o teu relatório ganha vida aqui. 🌱";
+    heroBig = ""; heroBigLabel = "";
+  } else if(subiuDia){
+    heroTitle = `O teu lucro por dia subiu ${f(dif)} MZN!`;
+    heroSub = `Passaste de ${f(p.lucro_dia_mes_anterior)} para ${f(p.lucro_dia_mes)} MZN por dia, em relação ao mês passado, ${nome}. Isto é fruto de registares o teu negócio.`;
+    heroBig = f(lucroMes); heroBigLabel = "MZN de lucro este mês";
+  } else if(subiuTotal){
+    heroTitle = `O teu lucro subiu ${f(lucroMes - lucroAnterior)} MZN face ao mês passado!`;
+    heroSub = `Estás mesmo a crescer, ${nome}. Continua a registar todos os dias — é isso que está a fazer a diferença.`;
+    heroBig = f(lucroMes); heroBigLabel = "MZN de lucro";
+  } else if(lucroMes > 0){
+    heroTitle = `Fizeste ${f(lucroMes)} MZN de lucro este mês!`;
+    heroSub = (evo === 'desceu')
+      ? `Há meses mais fortes e meses mais calmos, ${nome}. O que conta é continuares a registar — é assim que vês onde melhorar.`
+      : `Todos os Meticais que registaste contam, ${nome}. Continua a registar todos os dias — é assim que se cresce.`;
+    heroBig = f(lucroMes); heroBigLabel = "MZN de lucro";
+  } else if(p.streak_atual > 0){
+    heroTitle = `${p.streak_atual} semana${p.streak_atual>1?'s':''} seguida${p.streak_atual>1?'s':''} a registar o teu negócio!`;
+    heroSub = `Isso é consistência a sério, ${nome} — é o primeiro passo para veres o teu negócio crescer.`;
+    heroBig = p.streak_atual; heroBigLabel = "semanas seguidas 🔥";
+  } else if(p.dicas_aprendidas > 0){
+    heroTitle = `Já aprendeste ${p.dicas_aprendidas} dica${p.dicas_aprendidas>1?'s':''} de negócio este mês!`;
+    heroSub = `Continua a falar com a Brada — cada dica é mais uma ferramenta para o teu negócio, ${nome}.`;
+    heroBig = p.dicas_aprendidas; heroBigLabel = "dicas aprendidas";
+  } else {
+    heroTitle = `Este mês foi mais calmo, ${nome} — e está tudo bem.`;
+    heroSub = "Estás aqui, e isso já é o que importa. Vamos com tudo no mês que vem? 🌱";
+    heroBig = ""; heroBigLabel = "";
+  }
+
+  const heroHtml = `
+    <div class="hero">
+      <div class="eyebrow">${heroEyebrow}</div>
+      <h1>${heroTitle}</h1>
+      <div class="sub">${heroSub}</div>
+      ${heroBig !== "" ? `<div class="big">${heroBig}<small> ${heroBigLabel}</small></div>` : ''}
+    </div>`;
+
+  // ---- Stats de apoio ----
+  const statsHtml = `
+    <div class="stats">
+      <div class="stat">
+        <div class="ic">🔥</div>
+        <div class="lbl">Sequência</div>
+        <div class="val">${p.streak_atual||0}<small> semanas</small></div>
+        <div class="cap">${p.streak_maximo>0 ? 'Melhor: '+p.streak_maximo+' semanas' : 'Vamos começar!'}</div>
+      </div>
+      <div class="stat">
+        <div class="ic">💡</div>
+        <div class="lbl">Dicas aprendidas</div>
+        <div class="val">${p.dicas_aprendidas||0}</div>
+        <div class="cap">Novas formas de vender mais</div>
+      </div>
+    </div>`;
+
+  // ---- Merito (um so, real) ----
+  let meritoHtml = '';
+  if(temNovo && temMesReferencia && !subiuDia){
+    let mt = null;
+    if(p.merito === 'dias_registados') mt = [`Registaste ${p.dias_mes} dias este mês`, `Quem regista todos os dias vê o negócio com clareza. Estás no bom caminho.`];
+    else if(p.merito === 'semanas_seguidas') mt = [`${p.streak_atual} semanas seguidas a registar`, `Esta consistência é a base de tudo o resto.`];
+    if(mt) meritoHtml = `<div class="badge"><div class="ic">🌟</div><div class="txt"><b>${mt[0]}</b>${mt[1]}</div></div>`;
+  }
+
+  // ---- Nivel ----
+  let nivelHtml = '';
+  if(p.nivel && p.nivel.nome && NIVEIS[p.nivel.nome]){
+    const N = NIVEIS[p.nivel.nome];
+    const pct = N.fim > N.ini ? Math.min(100, Math.max(4, Math.round(((p.nivel.dias_total - N.ini) / (N.fim - N.ini)) * 100))) : 100;
+    const cap = p.nivel.proximo
+      ? `Faltam ${p.nivel.faltam} dia${p.nivel.faltam>1?'s':''} de registo para o nível ${p.nivel.proximo}.`
+      : `Chegaste ao nível mais alto. Parabéns!`;
+    nivelHtml = `
+      <div class="card">
+        <div class="nivel">
+          <div class="ic">${N.ic}</div>
+          <div><div class="t">Nível ${p.nivel.nome}</div><div class="c">${cap}</div></div>
+        </div>
+        ${p.nivel.proximo ? `<div class="prog"><i style="width:${pct}%"></i></div>` : ''}
+      </div>`;
+  }
+
+  // ---- Grafico de tendencia ----
+  let trendHtml = '';
+  if(meses.length >= 2){
+    const lucros = meses.map(m => m.vendas - m.custos_diretos - m.custos_indiretos);
+    const maxV = Math.max(...lucros.map(v=>Math.max(v,0)), 1);
+    trendHtml = `
+      <div class="card">
+        <h3>O teu lucro, mês a mês</h3>
+        <p class="cap">Meticais, últimos ${meses.length} meses</p>
+        <div class="trend">
+          ${meses.map((m,i)=>{
+            const l = m.vendas - m.custos_diretos - m.custos_indiretos;
+            const isNeg = l < 0;
+            const h = isNeg ? 15 : Math.max(4, Math.round((l/maxV)*100));
+            const isNow = i === meses.length-1;
+            const cls = isNeg ? 'neg' : (isNow ? 'now' : '');
+            return `<div class="col"><div class="bar ${cls}" style="height:${h}%"><span class="val">${f(l)}</span></div><div class="m">${mesCurto(m.mes)}</div></div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  } else if(meses.length === 1 && (p.semanas_mes_referencia||[]).length){
+    const semanas = p.semanas_mes_referencia;
+    const lucros = semanas.map(s => s.vendas - s.custos_diretos - s.custos_indiretos);
+    const maxV = Math.max(...lucros.map(v=>Math.max(v,0)), 1);
+    trendHtml = `
+      <div class="card">
+        <h3>O teu lucro, semana a semana</h3>
+        <p class="cap">Meticais, ${mesLabel(p.mes_referencia)}</p>
+        <div class="trend">
+          ${semanas.map((s,i)=>{
+            const l = s.vendas - s.custos_diretos - s.custos_indiretos;
+            const isNeg = l < 0;
+            const h = isNeg ? 15 : Math.max(4, Math.round((l/maxV)*100));
+            const isNow = i === semanas.length-1;
+            const cls = isNeg ? 'neg' : (isNow ? 'now' : '');
+            return `<div class="col"><div class="bar ${cls}" style="height:${h}%"><span class="val">${f(l)}</span></div><div class="m">Sem ${i+1}</div></div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ---- O teu caminho (benchmark: mediana em MZN por dia, sem ranking) ----
+  let caminhoHtml = '';
+  if(temNovo && temMesReferencia){
+    const b = p.benchmark;
+    const quem = b.escopo === 'segmento' ? 'negócios como o teu' : 'jovens que usam a Brada';
+    if(b.escopo === 'dados_insuficientes'){
+      caminhoHtml = `
+        <div class="card caminho">
+          <h3>O teu caminho</h3>
+          <p class="cap">Um passo de cada vez</p>
+          <p>Para comparar de forma justa, precisamos de pelo menos 4 dias registados no mês. Quanto mais dias registares, mais claro fica o teu caminho. No próximo relatório mostramos-te onde estás.</p>
+        </div>`;
+    } else if((b.escopo === 'segmento' || b.escopo === 'grupo') && b.mediana_lucro_dia != null){
+      let texto, alvo;
+      if(b.situacao === 'acima'){
+        texto = `O teu lucro por dia (${f(p.lucro_dia_mes)} MZN) está acima do ritmo típico de ${quem}. O caminho agora é consolidar: manter o que estás a fazer.`;
+        alvo = `<b>${f(b.mediana_lucro_dia)} MZN por dia</b>ritmo típico de ${quem}`;
+      } else if(b.situacao === 'no_ritmo'){
+        texto = `O teu lucro por dia (${f(p.lucro_dia_mes)} MZN) está no ritmo típico de ${quem}. O próximo degrau é subir um bocadinho, com calma.`;
+        alvo = `<b>${f(b.mediana_lucro_dia)} MZN por dia</b>ritmo típico de ${quem}`;
+      } else {
+        texto = `${quem.charAt(0).toUpperCase()+quem.slice(1)} andam à volta de ${f(b.mediana_lucro_dia)} MZN de lucro por dia. Tu estás a ${f(b.distancia)} MZN por dia de lá chegar — é um passo pequeno e alcançável.`;
+        alvo = `<b>${f(b.mediana_lucro_dia)} MZN por dia</b>o degrau a que podes chegar`;
+      }
+      caminhoHtml = `
+        <div class="card caminho">
+          <h3>O teu caminho</h3>
+          <p class="cap">Sem ranking e sem nomes — só o teu próximo degrau</p>
+          <p>${texto}</p>
+          <div class="alvo">${alvo}</div>
+        </div>`;
+    }
+  }
+
+  // ---- Um passo de cada vez ----
+  let passoHtml = '';
+  if(temNovo && temMesReferencia && p.desafio){
+    const d = p.desafio;
+    const t = d.tipo === 'lucro_dia'
+      ? `No próximo mês, tenta chegar aos ${f(d.valor)} MZN de lucro por dia.`
+      : `No próximo mês, tenta registar ${d.valor} dias.`;
+    passoHtml = `<div class="passo"><div class="lbl">Um passo de cada vez</div><div class="txt">${t}</div></div>`;
+  }
+
+  // ---- Numeros confirmados ----
+  let numerosHtml = '';
+  if(temMesReferencia && mesAtualObj){
+    numerosHtml = `
+      <div class="card">
+        <h3>Números de ${mesLabel(p.mes_referencia)}</h3>
+        <p class="cap">Confirmados a partir do que registaste com a Brada</p>
+        <div class="stats" style="margin-bottom:0">
+          <div class="stat"><div class="lbl">Vendas</div><div class="val">${f(mesAtualObj.vendas)}<small> MZN</small></div></div>
+          <div class="stat"><div class="lbl">Lucro</div><div class="val">${f(lucroMes)}<small> MZN</small></div></div>
+          <div class="stat"><div class="lbl">Custos diretos</div><div class="val">${f(mesAtualObj.custos_diretos)}<small> MZN</small></div></div>
+          <div class="stat"><div class="lbl">Custos indiretos</div><div class="val">${f(mesAtualObj.custos_indiretos)}<small> MZN</small></div></div>
+        </div>
+      </div>`;
+  }
+
+  const encHtml = temMesReferencia ? `<div class="enc">Cada registo conta. Estou contigo no próximo mês, ${nome}! 💚</div>` : '';
+
+  app.innerHTML = `
+    <div class="head">
+      <div class="brand">Brada</div>
+      <div class="month">O teu resumo${temMesReferencia?'<b>'+mesLabel(p.mes_referencia)+'</b>':''}</div>
+    </div>
+    ${heroHtml}
+    ${meritoHtml}
+    ${statsHtml}
+    ${nivelHtml}
+    ${trendHtml}
+    ${caminhoHtml}
+    ${passoHtml}
+    ${numerosHtml}
+    ${encHtml}
+    <a class="cta" href="https://wa.me/258876294831" target="_blank">🌱 Continuar a falar com a Brada</a>
+    <div class="foot">Este relatório é só teu — ninguém mais vê os teus números.<br>Brada · a tua parceira de negócio</div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>
